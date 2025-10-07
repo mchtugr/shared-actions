@@ -1,0 +1,23 @@
+name: Test Release Workflow
+
+on: 
+    workflow_dispatch: 
+        inputs:
+            type:
+                description: 'The type of release'
+                required: true
+                type: choice
+                options:
+                    - patch
+                    - minor
+                    - major
+jobs: 
+  test-release:
+    name: Call release workflow
+    uses: mchtugr/shared-actions/.github/workflows/release.yaml@develop
+    permissions:
+      contents: write 
+    with:
+      type: ${{ inputs.type }}
+    secrets:
+      GH_ACTION_PAT: ${{ secrets.GH_ACTION_PAT }}  
