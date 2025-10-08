@@ -59,7 +59,7 @@ jobs:
           release_type: ${{ inputs.type }}
            
 
-      - name: Bump version (release) and push release version to develop
+      - name: Bump version (release)
         id: version
         env:
           NEXT_VERSION: ${{ steps.next_version.outputs.next_version }}

@@ -1,6 +1,10 @@
 {
   "name": "shared-actions",
+<<<<<<< HEAD
   "version": "5.0.1",
+=======
+  "version": "5.0.1-SNAPSHOT",
+>>>>>>> 634e95806e3921cb572db4d3f0b5f5ec6dc74454
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
