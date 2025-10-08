@@ -3,7 +3,6 @@ name: Release
 on:
   workflow_call:
     inputs:
-    # Removed commit-id input, always releases from develop
       type:
         description: 'The type of release (e.g., patch, minor, major)'
         required: false
@@ -55,8 +54,8 @@ jobs:
         id: next_version
         uses: mchtugr/get-release-version@v1
         with:
-          current_version: ${{ steps.get_version.outputs.current_version }}
-          release_type: ${{ inputs.type }}
+          current-version: ${{ steps.get_version.outputs.current_version }}
+          release-type: ${{ inputs.type }}
            
 
       - name: Bump version (release)
@@ -94,9 +93,9 @@ jobs:
         id: snapshot_version
         uses: mchtugr/get-release-version@v1
         with:
-          current_version: ${{ steps.version.outputs.release_version }}
-          release_type: patch
-          generate_snapshot: true
+          current-version: ${{ steps.version.outputs.release_version }}
+          release-type: patch
+          generate-snapshot: true
 
       - name: Switch back to develop and set snapshot version
         env: 
