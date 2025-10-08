@@ -59,7 +59,7 @@ jobs:
           release_type: ${{ inputs.type }}
            
 
-      - name: Bump version (release)
+      - name: Bump version (release) and push release version to develop
         id: version
         env:
           NEXT_VERSION: ${{ steps.next_version.outputs.next_version }}
@@ -72,7 +72,7 @@ jobs:
           RELEASE_VERSION: ${{ steps.version.outputs.release_version }}
         run: |
           git add package.json package-lock.json || true
-          git commit -m "chore(release): v$RELEASE_VERSION"
+          git commit -m "chore(release): $RELEASE_VERSION"
           git push origin develop
 
       - name: Merge release to main
