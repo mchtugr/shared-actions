@@ -12,7 +12,7 @@ on:
                     - minor
                     - major
             dry-run:
-                description: 'If true, the workflow will simulate the release process without making any changes'
+                description: 'DRY RUN - If true, the workflow will simulate the release process without making any changes'
                 required: false
                 type: boolean
                 default: true        
