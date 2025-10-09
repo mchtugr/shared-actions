@@ -97,6 +97,7 @@ jobs:
         run: |
           git tag -f ${{ steps.version.outputs.release_version }}
           echo "BRANCHES_TO_PUSH=${BRANCHES_TO_PUSH} ${RELEASE_VERSION}" >> $GITHUB_ENV
+          echo "Created tag: $RELEASE_VERSION"
       
       - name: Switch back to source branch and merge target branch
         run: |
@@ -111,11 +112,10 @@ jobs:
           release-type: patch
           generate-snapshot: true
 
-      - name: Switch back to source branch and set snapshot version
+      - name: Set snapshot version
         env: 
           SNAPSHOT_VERSION: ${{ steps.snapshot_version.outputs.release-version }}
         run: |
-          git checkout ${{ inputs.source-branch }}
           npm version $SNAPSHOT_VERSION --no-git-tag-version
           git add package.json package-lock.json || true
           git commit -v -m "chore(release-candidate): v$SNAPSHOT_VERSION"
