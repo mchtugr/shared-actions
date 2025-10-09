@@ -136,7 +136,8 @@ jobs:
         run: |
           git push -v --atomic origin ${{ env.BRANCHES_TO_PUSH }}
 
-          
+    
+           
       - name: Release 
         uses: softprops/action-gh-release@v2
         with:
