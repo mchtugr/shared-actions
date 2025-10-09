@@ -24,7 +24,7 @@ on:
             required: true
 
 env:
-  BRANCHES_TO_PUSH: "{{ inputs.source-branch }} {{ inputs.target-branch }}"
+  BRANCHES_TO_PUSH: "${{ inputs.source-branch }} ${{ inputs.target-branch }}"
   SOURCE_BRANCH: ${{ inputs.source-branch }}
   TARGET_BRANCH: ${{ inputs.target-branch }}
 jobs:
