@@ -128,4 +128,4 @@ jobs:
           git commit -m "chore(release-candidate): v$SNAPSHOT_VERSION"
       - name: Push changes to remote branches
         run: |
-          git push --atomic ${{ env.BRANCHES_TO_PUSH }}
+          git push --atomic origin ${{ env.BRANCHES_TO_PUSH }}
