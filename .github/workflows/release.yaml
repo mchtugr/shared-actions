@@ -60,7 +60,7 @@ jobs:
       
       - name: Get next version
         id: next_version
-        uses: mchtugr/get-release-version@v1
+        uses: mchtugr/get-release-version@fix/snapshot-version
         with:
           current-version: ${{ steps.get_version.outputs.current_version }}
           release-type: ${{ inputs.type }}
@@ -106,7 +106,7 @@ jobs:
       
       - name: Get snapshot version
         id: snapshot_version
-        uses: mchtugr/get-release-version@v1
+        uses: mchtugr/get-release-version@fix/snapshot-version
         with:
           current-version: ${{ steps.version.outputs.release_version }}
           release-type: patch
