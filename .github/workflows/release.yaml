@@ -134,5 +134,5 @@ jobs:
         if: ${{ inputs.dry-run == true }}
         run: |
           echo "Dry run complete. No changes were pushed or released."
-          echo $RELEASE_VERSION would be released if this were not a dry run.
+          echo "$RELEASE_VERSION would be released if this were not a dry run."
           
