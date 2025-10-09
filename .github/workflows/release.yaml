@@ -32,7 +32,7 @@ env:
   BRANCHES_TO_PUSH: "${{ inputs.source-branch }} ${{ inputs.target-branch }}"
   SOURCE_BRANCH: ${{ inputs.source-branch }}
   TARGET_BRANCH: ${{ inputs.target-branch }}
-  RELEASE_TYPE: ${{ inputs.type }}
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -52,17 +52,17 @@ jobs:
           git config --global user.email "github-actions@github.com"
 
       - name: Get current version
-        id: get_version
+        id: current-version
         run: |
           CURRENT_VERSION=$(grep '"version":' package.json | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+(-SNAPSHOT)?)".*/\1/')
-          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "Current version: $CURRENT_VERSION"
       
       - name: Get next version
-        id: next_version
+        id: next-version
         uses: mchtugr/get-next-release-version@v1
         with:
-          current-version: ${{ steps.get_version.outputs.current_version }}
+          current-version: ${{ steps.current-version.outputs.version }}
           release-type: ${{ inputs.type }}
       
       - name: Check out to target branch and merge source branch
@@ -72,17 +72,17 @@ jobs:
           git merge -v "${SOURCE_BRANCH}"
 
       - name: Bump version (release)
-        id: version
+        id: release-version
         env:
-          NEXT_VERSION: ${{ steps.next_version.outputs.release-version }}
+          NEXT_VERSION: ${{ steps.next-version.outputs.release-version }}
         run: |
           RELEASE_VERSION=$(npm version $NEXT_VERSION --no-git-tag-version)
-          echo "release_version=$RELEASE_VERSION" >> $GITHUB_OUTPUT 
+          echo "version=$RELEASE_VERSION" >> $GITHUB_OUTPUT 
           echo "Release version: $RELEASE_VERSION"
 
       - name: Commit release version to target branch
         env:
-          RELEASE_VERSION: ${{ steps.version.outputs.release_version }}
+          RELEASE_VERSION: ${{ steps.release-version.outputs.version }}
         run: |
           git add package.json package-lock.json || true
           git commit -v -m "chore(release): $RELEASE_VERSION"
@@ -93,9 +93,9 @@ jobs:
 
       - name: Create Release Tag
         env:
-          RELEASE_VERSION: ${{ steps.version.outputs.release_version }}
+          RELEASE_VERSION: ${{ steps.release-version.outputs.version }}
         run: |
-          git tag -f ${{ steps.version.outputs.release_version }}
+          git tag -f $RELEASE_VERSION
           echo "BRANCHES_TO_PUSH=${BRANCHES_TO_PUSH} ${RELEASE_VERSION}" >> $GITHUB_ENV
           echo "Created tag: $RELEASE_VERSION"
       
@@ -108,7 +108,7 @@ jobs:
         id: snapshot_version
         uses: mchtugr/get-next-release-version@v1
         with:
-          current-version: ${{ steps.version.outputs.release_version }}
+          current-version: ${{ steps.release-version.outputs.version }}
           release-type: patch
           generate-snapshot: true
 
@@ -126,7 +126,7 @@ jobs:
       - name: Release
         if: ${{ inputs.dry-run == false }}
         env:
-          RELEASE_VERSION: ${{ steps.version.outputs.release_version }}
+          RELEASE_VERSION: ${{ steps.release-version.outputs.version }}
           GH_TOKEN: ${{ secrets.GH_ACTION_PAT }}
         run: |
           gh release create $RELEASE_VERSION \
@@ -136,7 +136,7 @@ jobs:
       - name: Dry Run Complete
         if: ${{ inputs.dry-run == true }}
         env:
-          RELEASE_VERSION: ${{ steps.version.outputs.release_version }}
+          RELEASE_VERSION: ${{ steps.release-version.outputs.version }}
         run: |
           echo "Dry run complete. No changes were pushed or released."
           echo "$RELEASE_VERSION would be released if this were not a dry run."
