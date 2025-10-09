@@ -132,5 +132,7 @@ jobs:
             --repo $GITHUB_REPOSITORY
       - name: Dry Run Complete
         if: ${{ inputs.dry-run == true }}
-        run: echo "Dry run complete. No changes were pushed or released."
+        run: |
+          echo "Dry run complete. No changes were pushed or released."
+          echo $RELEASE_VERSION would be released if this were not a dry run.
           
