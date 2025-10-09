@@ -19,5 +19,7 @@ jobs:
       contents: write 
     with:
       type: ${{ inputs.type }}
+      source-branch: 'develop'
+      target-branch: 'main'
     secrets:
       GH_ACTION_PAT: ${{ secrets.GH_ACTION_PAT }}  
