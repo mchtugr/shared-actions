@@ -127,6 +127,7 @@ jobs:
         if: ${{ inputs.dry-run == false }}
         env:
           RELEASE_VERSION: ${{ steps.version.outputs.release_version }}
+          GH_TOKEN: ${{ secrets.GH_ACTION_PAT }}
         run: |
           gh release create $RELEASE_VERSION \
             -t "$RELEASE_VERSION" \
