@@ -1,6 +1,6 @@
 {
   "name": "shared-actions",
-  "version": "7.3.6",
+  "version": "7.3.7-SNAPSHOT",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
