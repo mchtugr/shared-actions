@@ -133,6 +133,8 @@ jobs:
           git add package.json package-lock.json || true
           git commit -m "chore(release-candidate): v$SNAPSHOT_VERSION"
       - name: Push changes to remote branches
+        env:
+          GH_TOKEN: ${{ secrets.GH_ACTION_PAT }}
         run: |
           git push -v --atomic origin ${{ env.BRANCHES_TO_PUSH }}
           gh release create ${{ steps.version.outputs.release_version }} \
