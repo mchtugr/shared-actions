@@ -126,6 +126,6 @@ jobs:
           npm version $SNAPSHOT_VERSION --no-git-tag-version
           git add package.json package-lock.json || true
           git commit -m "chore(release-candidate): v$SNAPSHOT_VERSION"
-      - name: Push changes to remote branches
-        run: |
-          git push --atomic origin ${{ env.BRANCHES_TO_PUSH }}
+      # - name: Push changes to remote branches
+      #   run: |
+      #     git push --atomic origin ${{ env.BRANCHES_TO_PUSH }}
