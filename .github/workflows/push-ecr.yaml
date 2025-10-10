@@ -10,8 +10,8 @@ on:
         type: string
       ecr-registry:
         description: 'ECR registry ID'
-        required: true
-        type: string    
+        required: false
+        type: string
       ecr-repo:
         description: 'ECR repository name'
         required: true
