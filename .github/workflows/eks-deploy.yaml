@@ -8,9 +8,8 @@ on:
         type: string
       aws-region:
         description: 'The AWS region where the EKS cluster is located'
-        required: false
+        required: true
         type: string
-        default: 'eu-north-1'
       namespace:
         description: 'The Kubernetes namespace to deploy to'
         required: false
@@ -20,16 +19,21 @@ on:
         description: 'The name of the Helm deployment'
         required: true
         type: string
-      chart-file-directory:
+      chart-file-path:
         description: 'The location of the Helm chart'
         required: false
         type: string
         default: './helm'
-      values-file:
+      values-file-path:
         description: 'The Helm values file to use for deployment'
         required: false
         type: string
-        default: './helm/values-dev.yaml'  
+        default: './helm/values-dev.yaml'
+      dry-run:
+        description: 'If true, the workflow will simulate the deployment process without making any changes'
+        required: false
+        type: boolean
+        default: true  
     secrets:
       EKS_ROLE_ARN:
         description: 'The AWS Role ARN to assume for deployment'
@@ -59,7 +63,7 @@ jobs:
         uses: azure/setup-kubectl@v3
         with:
           version: 'v1.33.0'
-      
+
       - name: Install Helm
         uses: azure/setup-helm@v4
         with:
@@ -68,17 +72,30 @@ jobs:
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig --region ${{ inputs.aws-region }} --name ${{ secrets.EKS_CLUSTER_NAME }}
-      
+
       - name: Get Ingress Hostname
         id: ingress
         run: |
             export INGRESS_HOST=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
             echo "ingress_host=$INGRESS_HOST" >> $GITHUB_OUTPUT
+
       - name: Deploy to EKS
+        if: ${{ inputs.dry-run == false }}
         run: |
-          helm upgrade --install ${{ inputs.deployment-name }} ${{ inputs.chart-file-directory }} \
+          helm upgrade --install ${{ inputs.deployment-name }} ${{ inputs.chart-file-path }} \
             --namespace ${{ inputs.namespace }} \
             --create-namespace \
-            --values ${{ inputs.values-file}} \
+            --values ${{ inputs.values-file-path}} \
             --set image.tag=${{ inputs.commit-id }} \
             --set ingress.host=${{ steps.ingress.outputs.ingress_host }}
+      - name: Simulate Deployment (Dry Run)
+        if: ${{ inputs.dry-run == true }}
+        run: |
+          echo "Dry run enabled, skipping actual deployment"
+          echo "Helm command that would be executed:"
+          echo "helm upgrade --install ${{ inputs.deployment-name }} ${{ inputs.chart-file-path }} \
+            --namespace ${{ inputs.namespace }} \
+            --create-namespace \
+            --values ${{ inputs.values-file-path}} \
+            --set image.tag=${{ inputs.commit-id }} \
+            --set ingress.host=${{ steps.ingress.outputs.ingress_host }}"
