@@ -4,8 +4,13 @@ on:
     inputs:
       commit-id:
         description: 'The commit ID to deploy'
-        required: true
+        required: false
+        default: ${{ github.sha }}
         type: string
+      image-tag:
+        description: 'The Docker image tag to deploy'
+        required: true
+        type: string  
       aws-region:
         description: 'The AWS region where the EKS cluster is located'
         required: true
@@ -29,6 +34,11 @@ on:
         required: false
         type: string
         default: './helm/values-dev.yaml'
+      use-default-ingress-host:
+        description: 'Whether to set ingress host in Helm values'
+        required: false
+        type: boolean
+        default: false
       dry-run:
         description: 'If true, the workflow will simulate the deployment process without making any changes'
         required: false
@@ -73,11 +83,25 @@ jobs:
         run: |
           aws eks update-kubeconfig --region ${{ inputs.aws-region }} --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-      - name: Get Ingress Hostname
+      - name: Get default ingress hostname
+        if: ${{ inputs.use-default-ingress-host == true }}
         id: ingress
         run: |
-            export INGRESS_HOST=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-            echo "ingress_host=$INGRESS_HOST" >> $GITHUB_OUTPUT
+          INGRESS_HOST=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true)
+          echo "ingress_host=$INGRESS_HOST" >> $GITHUB_OUTPUT
+        
+      - name: Set ingress host argument with default hostname
+        id: ingress-host-arg
+        if: ${{ inputs.use-default-ingress-host == true }}
+        env:
+          INGRESS_HOST: ${{ steps.ingress.outputs.ingress_host }}
+        run: |
+          if [ -n "$INGRESS_HOST" ] ; then
+            echo "Using default ingress host: $INGRESS_HOST"
+            echo "ingress_arg=--set ingress.host=$INGRESS_HOST" >> $GITHUB_ENV
+          else
+            echo "No default ingress host found, proceeding without setting ingress host"
+          fi    
 
       - name: Deploy to EKS
         if: ${{ inputs.dry-run == false }}
@@ -86,8 +110,8 @@ jobs:
             --namespace ${{ inputs.namespace }} \
             --create-namespace \
             --values ${{ inputs.values-file-path}} \
-            --set image.tag=${{ inputs.commit-id }} \
-            --set ingress.host=${{ steps.ingress.outputs.ingress_host }}
+            --set image.tag=${{ inputs.image-tag }} ${{ steps.ingress-host-arg.outputs.ingress_arg }}
+
       - name: Simulate Deployment (Dry Run)
         if: ${{ inputs.dry-run == true }}
         run: |
@@ -97,5 +121,4 @@ jobs:
             --namespace ${{ inputs.namespace }} \
             --create-namespace \
             --values ${{ inputs.values-file-path}} \
-            --set image.tag=${{ inputs.commit-id }} \
-            --set ingress.host=${{ steps.ingress.outputs.ingress_host }}"
+            --set image.tag=${{ inputs.image-tag }} ${{ steps.ingress-host-arg.outputs.ingress_arg }}"
